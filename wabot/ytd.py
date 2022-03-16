@@ -1,6 +1,6 @@
+import pytube as pt
 import argparse
-import youtube_dl
-from youtubesearchpython import VideosSearch
+from pydub import AudioSegment
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t","--titolo",type=str)
@@ -10,32 +10,21 @@ args = parser.parse_args()
 
 if "https://" in args.titolo:
     try:
-        link = args.titolo
+        video = pt.YouTube(args.titolo)
     except:
         print("error general")
 else:
     try:
-        videosSearch = VideosSearch(args.titolo, limit = 1)
-        link = videosSearch.result().get("result")[0]["link"]
+        video = pt.Search(args.titolo).results[0]
     except:
         print("error searching video")
-if args.mode == "video":
-    ydl_opts = {
-         'format': 'best[filesize<64M][ext=mp4]',
-         'outtmpl': args.name+'.%(ext)s',
-     }
-else:
-     ydl_opts = {
-         'format': 'best[filesize<64M]',
-         'outtmpl': args.name+'.%(ext)s',
-         'postprocessors': [{
-             'key': 'FFmpegExtractAudio',
-             'preferredcodec': 'mp3',
-             'preferredquality': '320',
-         }],
-     }
 
-with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    ydl.download([link])
-#except:
-#    print("error downloading")
+if args.mode == "video":
+    video.streams.filter(type='video',file_extension='mp4').first().download(filename=args.name+'.mp4')
+else:
+    try:
+        video.streams.filter(only_audio=True,file_extension='mp3').first().download(filename=args.name+'.mp3')
+    except:
+        print("Using ffmpeg")
+        video.streams.filter(type='video',file_extension='mp4').first().download(filename=args.name+'.mp4')
+        AudioSegment.from_file(args.name+'.mp4').export(args.name+'.mp3', format='mp3')        
