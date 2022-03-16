@@ -23,7 +23,6 @@ const exec = require('child_process');  //command library
 //console.log(green, "Loading file lib");
 const fs = require('fs');               //file library
 //console.log(green, "Loading POST lib");
-const axios = require('axios');             //POST library
 //console.log(green, "Loading MySQL");
 //const mysql = require('mysql');         //MySQL library
 //console.log(white, "Loading libraries complete!");
@@ -140,9 +139,8 @@ function main(client) { //check for new messages (runs in loop forever)
 //      if(parseInt(fs.statSync(setArr[0]+"/log/tmp.txt").size)>30000){
 //              fs.unlinkSync(setArr[0]+"/log/tmp.txt");
 //      }
-        axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+message.from+"&t=event&ec=messaggio&ea=messagio").catch(error => {console.error("error sending post request")});
         client.sendSeen(message.from);
-        if (message.type == "chat" && message.body.length < 400) {
+        if (message.type == "chat" && message.body.length < 800) {
             if (message.body.startsWith(".roberto")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
                     if (active)  //controlla se il chatId è attivo
@@ -204,7 +202,6 @@ function exit(code) {
 }
 function sendErr(client, chatId) {//Inizializzare funzione invio errore
     client.sendText(chatId, strArr[0]);
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=Errore").catch(error => {console.error("error sending post request")});
 
 }
 
@@ -252,7 +249,7 @@ async function tts(client, text, chatId, title) { //funzione per generare audio 
             sendErr(client, chatId);
         });
 //     client.sendText(chatId, "Roberto ha superato il limite di messaggi giornalieri è bloccato");
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=roberto&el=roberto_char_count&ev="+text.length).catch(error => {console.error("error sending post request")});
+    
 }
 async function audio(client, text, chatId, title) { //funzione per generare audio e inviare
 //    console.log("%salling external program: %s%sytd.py -t \"%s\" -n %s -m audio", green, setArr[2], setArr[0], text, title);
@@ -277,7 +274,6 @@ async function audio(client, text, chatId, title) { //funzione per generare audi
             sendErr(client, chatId);
         });
 
-     axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=audio").catch(error => {console.error("error sending post request")});
 
 }
 async function video(client, text, chatId, title) { //funzione per generare video e inviare
@@ -296,13 +292,11 @@ async function video(client, text, chatId, title) { //funzione per generare vide
             console.error("%sError sending video! (filename:%s.mp4)", red, title);
             sendErr(client, chatId);
         });
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=video").catch(error => {console.error("error sending post request")});
 
 }
 async function foto(client, text, chatId, title) { //funzione per generare foto e inviare
     var mode = "-";
     if (text.includes("NSFW")) {
-        text.replace("NSFW", "");
         mode = "NSFW";
     }
 //    console.log("%sCalling external program: %s%sfoto.py -t \"%s\" -n %s -m %s", green, setArr[2], setArr[0], text, title, mode);
@@ -324,7 +318,6 @@ async function foto(client, text, chatId, title) { //funzione per generare foto 
         });
 
 //    await client.sendText(chatId, "Limite foto giornaliere raggiunto, si resetta alle 0:00 del 21/05/2021"); 
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=foto").catch(error => {console.error("error sending post request")});
 
 }
 async function sticker(client, chatId, message, title) {
@@ -340,7 +333,7 @@ async function sticker(client, chatId, message, title) {
         fs.unlink(setArr[0] + title + ".png", (er) => {  }); //delete non necessary media
         await client.sendImageAsStickerGif(chatId, setArr[0] + title + ".gif")
             .catch((erro) => {
-                console.error(red, "Error sending sticker gif");
+                console.error(red, "Error sending sticker gif", erro);
             });
         fs.unlink(setArr[0] + title + ".gif", (er) => {  }); //delete non necessary media
     }
@@ -350,10 +343,9 @@ async function sticker(client, chatId, message, title) {
         	fs.unlink(setArr[0] + title + ext, (er) => {  }); //delete non necessary media
 	    })
             .catch((erro) => {
-                console.error(red, "Error sending sticker");
+                console.error(red, "Error sending sticker", erro);
             });
     }
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=sticker").catch(error => {console.error("error sending post request")});
 
 }
 async function tagall(client, chatId, message) { //funzione per generare foto e inviare
@@ -380,7 +372,6 @@ async function tagall(client, chatId, message) { //funzione per generare foto e 
         ).catch((erro) => {
             console.error('Error when replying: ', erro); //return object error
         });;
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=tagall").catch(error => {console.error("error sending post request")});
 
 }
 async function tagsticker(client, chatId, message, title){
@@ -392,7 +383,6 @@ async function tagsticker(client, chatId, message, title){
 async function help(client, chatId) { //funzione per messaggio aiuto
         const text = fs.readFileSync(setArr[0]+"/languages/"+setArr[1]+".help",'UTF-8').toString();
         await client.sendText(chatId,text);
-    axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=interazione&ea=comandi").catch(error => {console.error("error sending post request")});
 }
 function validate(client, chatId, callback) { //funzione per validazione chat
     callback(true)
@@ -426,7 +416,6 @@ function validate(client, chatId, callback) { //funzione per validazione chat
 async function sendCode(client, codice, chatId){
 	await client.sendText(chatId,	"*Questa chat ha terminato le interazioni*\nPer riabilitare il bot, visita:\n http://robertobot.duckdns.org \nVerrai spostato su una pagina dove verrà richiesto di inserire il seguente codice:");
 	await client.sendText(chatId,codice.toString());
-	axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=verifica&ea=limite_messaggi").catch(error => {console.error("error sending post request")});
 }
 function leaveOld(client){
     con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
