@@ -38,6 +38,7 @@ if (DEBUG_LVL > 1) console.log(white, "Loading settings");
 try {
         const data = fs.readFileSync("./setting.set", 'UTF-8');
         const lines = data.split(/\r?\n/);
+	if (DEBUG_LVL > 1) console.log(white, "Setting file lines count:",lines.lenght);
     lines.forEach((line) => {
             setArr.push(line);
         });
