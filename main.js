@@ -40,7 +40,7 @@ try {
         const lines = data.split(/\r?\n/);
 	if (DEBUG_LVL > 1) console.log(white, "Setting file lines count:",lines.lenght);
     lines.forEach((line) => {
-            setArr.push(line);
+	    if(line!='') setArr.push(line);
         });
 }
 catch (err) {
@@ -94,7 +94,7 @@ function start(filename, callback) {
         const data = fs.readFileSync(filename, 'UTF-8');
         const lines = data.split(/\r?\n/);
         lines.forEach((line) => {
-            strArr.push(line);
+            if(line!='') strArr.push(line);
         });
     } catch (err) {
         console.error(err);
