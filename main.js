@@ -66,7 +66,7 @@ var con = mysql.createConnection({
     database: "roberto_db",
 });*/
 //START MAIN [usage:start(filename, N° strings, success callback)
-start(setArr[0] + "\\languages\\" + setArr[1]+".lan", function(){
+start(setArr[0] + "/languages/" + setArr[1]+".lan", function(){
     //code only runs if language file OK
     //start the venom library
     venom
