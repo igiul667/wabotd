@@ -1,5 +1,4 @@
 import argparse
-import subprocess
 from google_images_search import GoogleImagesSearch
 parser = argparse.ArgumentParser()
 parser.add_argument("-m","--mode",type=str)
