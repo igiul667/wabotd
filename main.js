@@ -422,7 +422,7 @@ function leaveOld(client){
 	if(result[0]!=undefined){
 	   result.forEach(groupId => {
 		console.log("leaving group:",groupId.chatId);
-		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
+//		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
            })
 	}
 	else
