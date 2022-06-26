@@ -197,9 +197,9 @@ function sendErr(client, chatId) {//Inizializzare funzione invio errore
 function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (da usare se l'entrata chatID non è presente nella tabella)
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("UPDATE utenti SET chatCode = '" + tempCode + "', active = '0' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
-        con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
+        con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
             if (result == undefined) {
-                con.query("INSERT INTO utenti (chatId, chatCode, count) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
+                con.query("INSERT INTO utenti (chatId, chatCode, uses) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
                     if (err) console.log(err);
                     callback(tempCode);
                 });
@@ -214,7 +214,7 @@ function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi 
 function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (aggiorna un'entrata gia presente)
     
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
-    con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
+    con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
 	if(result == undefined){
              con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
              	if (err) console.log(err);
@@ -386,7 +386,7 @@ async function help(client, chatId) { //funzione per messaggio aiuto
 }
 function validate(client, chatId, callback) { //funzione per validazione chat
     //callback(true)
-    con.query("SELECT count FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+    con.query("SELECT uses FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         if (err) console.log(err);
         if (result == undefined ) {//check if the entry exists
             console.log("recived message from new group, verifying");
@@ -396,9 +396,9 @@ function validate(client, chatId, callback) { //funzione per validazione chat
             });
         }
         else {
-            if (result[0].count < MaxMessageVer) { //chatId registrato e valido
+            if (result[0].uses < MaxMessageVer) { //chatId registrato e valido
                 callback(true);
-                con.query("UPDATE utenti SET count=count+1  WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+                con.query("UPDATE utenti SET uses=uses+1  WHERE chatId = '" + chatId + "';", function (err, result, fields) {
                     if (err) console.log(err);
                 });
             }
