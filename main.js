@@ -11,6 +11,7 @@ const MaxMessageVer = 50;
 const SETTINGS_LINES = 3;
 const STRING_LINES = 9;
 const DEBUG_LVL = 3;
+
 //START LOGGING & LIBS-----------------------
 const red = "\x1b[31m";
 const green = "\x1b[32m";
@@ -82,15 +83,6 @@ start(setArr[0] + "\\languages\\" + setArr[1]+".lan", function(){
         });
 
 });
-
-
-
-
-
-
-
-
-
 //FUNCTION DECLARATIONS----------------------
 //MAIN FUNCTIONS-----------------------------
 function start(filename, callback) {
@@ -193,16 +185,20 @@ function sendErr(client, chatId) {//Inizializzare funzione invio errore
     analytics(chatId,"Error")
 
 }
-function validate(client, chatId, callback) { //funzione per validazione chat
+
+function validate(client, chatId, callback) { //Verifica se il chatId ha crediti a disposizione, se il chatId manca nel DB chiama setCode, altrimenti upCode
     //callback(true)
     con.execute("SELECT uses FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         if (err) console.log(err);
         if (result.length == 0) {//check if the entry exists
-            if(DEBUG_LVL > 1) console.log(white, "Recived message from new group, verifying");
+            if (DEBUG_LVL > 1) console.log(white, "Recived message from new group, verifying");
+            //If the chat hasn't been recorded ask data permission (buttons not working)
+            //welcomeMessage(client, chatId); // , function (){
             setCode(chatId, function (code) {
                 sendCode(client, code, chatId);
                 callback(false);
             });
+            //});
         }
         else {
             if (result[0].uses < MaxMessageVer) { //chatId registrato e valido
@@ -221,24 +217,22 @@ function validate(client, chatId, callback) { //funzione per validazione chat
 
     });
 }
-function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (da usare se l'entrata chatID non è presente nella tabella)
+function setCode(chatId, callback) {//Crea l'entrata nel DB per chatId specificato, assegna codice casuale (controlla che sia unico), restituisce nel callback il codice ottenuto
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
-    con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
-        con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-            if (result.length == 0) {
-                con.query("INSERT INTO utenti (chatId, chatCode, uses) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
-                    if (err) console.log(err);
-                    callback(tempCode);
-                });
-            }
-            else {
-                setCode(chatId, (code) => { callback(code) });
-            }
-        });
-   });
+    //con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+    con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
+        if (result.length == 0) {
+            con.query("INSERT INTO utenti (chatId, chatCode, uses) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
+            if (err) console.log(err);
+                callback(tempCode);
+            });
+        }
+        else {
+            setCode(chatId, (code) => { callback(code) });
+        }
+    });
 }
-
-function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (aggiorna un'entrata gia presente)
+function upCode(chatId, callback) { //Stessa cosa di setCode, unica differenza la query di update al posto di insert into
     
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
@@ -249,9 +243,39 @@ function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi l
 	     });
 	}
 	else{
-	    setCode(chatId,(code)=>{callback(code)});
+	    upCode(chatId,(code)=>{callback(code)});
 	}
     });
+}
+function leaveOld(client) {
+    con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
+        if (result.length != 0) {
+            result.forEach(groupId => {
+                console.log("leaving group:", groupId.chatId);
+                client.leaveGroup(groupId.chatId);
+            })
+        }
+        else
+            console.log("No old groups to leave");
+    });
+}
+
+function analytics(client_id, event_name) {
+    const measurement_id = 'G-0BE6M947L6';
+    const api_secret = '-4eLYTRSTyGdFAa1_kafZA';
+    axios.post('https://www.google-analytics.com/mp/collect?&api_secret=' + api_secret + '&measurement_id=' + measurement_id,
+        {
+            "client_id": client_id,
+            "events": [{
+                "name": event_name,
+                "params": {
+                    "engagement_time_msec": "100",
+                    "session_id": client_id
+                },
+            }
+            ]
+
+        });
 }
 //BOT----------------------------------------
 async function tts(client, text, chatId, title) { //funzione per generare audio (TTS) e inviare
@@ -413,36 +437,31 @@ async function help(client, chatId) { //funzione per messaggio aiuto
 }
 async function sendCode(client, codice, chatId){
 	//await client.sendText(chatId,	"*Questa chat ha terminato le interazioni*\nPer riabilitare il bot, visita:\n http://robertobot.duckdns.org \nVerrai spostato su una pagina dove verrà richiesto di inserire il seguente codice:");
-	await client.sendText(chatId,codice.toString());
+	await client.sendText(chatId,"*Credito esaurito*\nPer riattivare il bot clicca il link e attendi, il procedimento è automatico.\nhttp://wabot.duckdns.org:6942/?code="+codice.toString());
     analytics(chatId, "Verifica");
 }
-function leaveOld(client){
-    con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
-	if(result!=undefined){
-	   result.forEach(groupId => {
-		console.log("leaving group:",groupId.chatId);
-//		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
-           })
-	}
-	else
-	    console.log("No old groups to leave");
-    });
-}
 
-function analytics(client_id, event_name) {
-    const measurement_id = 'G-0BE6M947L6';
-    const api_secret = '-4eLYTRSTyGdFAa1_kafZA';
-    axios.post('https://www.google-analytics.com/mp/collect?&api_secret=' + api_secret + '&measurement_id=' + measurement_id,
+function welcomeMessage(client, chatId) {
+    let date = new Date();
+    //client.sendText("*Benvenuto*\nPer procedere dovrai accettare i termini di servizio.\n-I messaggi vengono gestiti in modo automatico\n-Viene raccolto il numero di messaggi inviati per evitare spam\n-Per più info visitare il sito\n\nTermini aggiornati al:" + date);
+    const buttons = [
         {
-            "client_id": client_id,
-            "events": [{
-                "name": event_name,
-                "params": {
-                    "engagement_time_msec": "100",
-                    "session_id": client_id
-                },
+            "buttonText": {
+                "displayText": "Accetto"
             }
-            ]
-
+        },
+        {
+            "buttonText": {
+                "displayText": "Rifiuto"
+            }
+        }
+    ]
+    client.sendButtons(chatId, "Termini d'uso", buttons, "Per utilizzare il bot bisogna accettare i termini d'uso. La lista completa è disponibile su https://sites.google.com/view/roberto-bot/home-page\nData:" + date)
+        .then((result) => {
+            console.log(result);
+        })
+        .catch((error) => {
+            console.error(error);
         });
 }
+
