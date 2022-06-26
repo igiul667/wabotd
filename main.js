@@ -31,7 +31,7 @@ const fs = require('fs');               //file library
 if (DEBUG_LVL > 1) console.log(white, "Loading POST lib");
 const axios = require('axios');             //POST library
 if (DEBUG_LVL > 1) console.log(white, "Loading MySQL");
-const mysql = require('mysql');         //MySQL library
+const mysql = require('mysql2');         //MySQL library
 if (DEBUG_LVL > 1) console.log(green, "Loading libraries complete!");
 
 const strArr = []; //array messaggi
