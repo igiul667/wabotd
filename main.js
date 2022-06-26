@@ -15,7 +15,9 @@ const DEBUG_LVL = 3;
 const red = "\x1b[31m";
 const green = "\x1b[32m";
 const white = "\x1b[37m";
+
 console.log("\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\r\n\u2588\u2588\u2591\u2588\u2588\u2588\u2591\u2588\u2591\u2584\u2584\u2580\u2588\u2591\u2584\u2584\u2580\u2588\u2580\u2584\u2584\u2580\u2588\u2584\u2591\u2584\u2588\u2588\u2588\u2588\u2588\u2588\u2584\u2588\u2591\u2584\u2584\u2588\u2588\u2588\u2591\u2584\u2591\u2588\u2588\u2588\u2588\u2591\u2584\u2584\u2591\r\n\u2588\u2588\u2591\u2588\u2591\u2588\u2591\u2588\u2591\u2580\u2580\u2591\u2588\u2591\u2584\u2584\u2580\u2588\u2591\u2588\u2588\u2591\u2588\u2588\u2591\u2588\u2588\u2580\u2580\u2588\u2588\u2588\u2591\u2588\u2584\u2584\u2580\u2588\u2588\u2588\u2588\u2580\u2584\u2588\u2580\u2580\u2588\u2591\u2580\u2584\u2591\r\n\u2588\u2588\u2584\u2580\u2584\u2580\u2584\u2588\u2591\u2588\u2588\u2591\u2588\u2584\u2584\u2584\u2584\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2588\u2588\u2584\u2584\u2588\u2591\u2580\u2591\u2588\u2584\u2584\u2584\u2588\u2588\u2588\u2591\u2580\u2580\u2588\u2584\u2584\u2588\u2591\u2580\u2580\u2591\r\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580");
+
 if(DEBUG_LVL>1) console.log(white, "Loading venom lib");
 const venom = require('venom-bot');     //interface for whatsapp
 if (DEBUG_LVL > 1) console.log(white, "Loading mime lib");
@@ -31,8 +33,10 @@ const axios = require('axios');             //POST library
 if (DEBUG_LVL > 1) console.log(white, "Loading MySQL");
 const mysql = require('mysql');         //MySQL library
 if (DEBUG_LVL > 1) console.log(green, "Loading libraries complete!");
+
 const strArr = []; //array messaggi
 const setArr = []; //array impostazioni
+
 //LOAD SETTINGS FILES------------------------
 if (DEBUG_LVL > 1) console.log(white, "Loading settings");
 try {
@@ -54,6 +58,7 @@ else {
     if (DEBUG_LVL > 3) console.table(setArr);
 }
 process.chdir(setArr[0]);//set running directory
+
 //LOAD lanGUAGE FILES------------------------
 if (DEBUG_LVL > 1) console.log("%sLoading language file: %s/languages/%s.lan",white,setArr[0],setArr[1]);
 //START MySQL Client
@@ -160,7 +165,7 @@ function main(client) { //check for new messages (runs in loop forever)
 	               tagsticker(client, message.from, message, Date.now());
 	        });
 	    }
-            if (message.body.startsWith("comandi")) {
+            if (message.body.startsWith("Comandi")) {
                 help(client, message.from);
             }
         }
@@ -380,8 +385,8 @@ async function help(client, chatId) { //funzione per messaggio aiuto
     analytics(chatId, "Comandi");
 }
 function validate(client, chatId, callback) { //funzione per validazione chat
-    callback(true)
-    /*con.query("SELECT count FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+    //callback(true)
+    con.query("SELECT count FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         if (err) console.log(err);
         if (result[0] == undefined ) {//check if the entry exists
             console.log("recived message from new group, verifying");
@@ -405,7 +410,7 @@ function validate(client, chatId, callback) { //funzione per validazione chat
             }
         }
 
-    });*/
+    });
 }
 async function sendCode(client, codice, chatId){
 	await client.sendText(chatId,	"*Questa chat ha terminato le interazioni*\nPer riabilitare il bot, visita:\n http://robertobot.duckdns.org \nVerrai spostato su una pagina dove verrà richiesto di inserire il seguente codice:");
@@ -413,16 +418,16 @@ async function sendCode(client, codice, chatId){
 	axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=verifica&ea=limite_messaggi").catch(error => {console.error("error sending post request")});
 }
 function leaveOld(client){
-    /*con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
+    con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
 	if(result[0]!=undefined){
 	   result.forEach(groupId => {
 		console.log("leaving group:",groupId.chatId);
-//		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
+		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
            })
 	}
 	else
 	    console.log("No old groups to leave");
-    });*/
+    });
 }
 function analytics(client_id, event_name) {
     const measurement_id = 'G-0BE6M947L6';
