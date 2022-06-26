@@ -67,7 +67,7 @@ var con = mysql.createConnection({
     host: "mysql",
     user: "nodejs",
     password: "a5C569sfa@W*hT",
-    port: '6603',
+    port: '3306',
     database: "wabot-data",
 });
 //START MAIN [usage:start(filename, N° strings, success callback)
