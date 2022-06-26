@@ -57,14 +57,14 @@ process.chdir(setArr[0]);//set running directory
 //LOAD lanGUAGE FILES------------------------
 if (DEBUG_LVL > 1) console.log("%sLoading language file: %s/languages/%s.lan",white,setArr[0],setArr[1]);
 //START MySQL Client
-/*
+
 var con = mysql.createConnection({
-    host: "192.168.0.200",
+    host: "mysql",
     user: "nodejs",
-    password: "Q@nDGfBFk2%CpAr@y",
-    port: '3306',
-    database: "roberto_db",
-});*/
+    password: "a5C569sfa@W*hT",
+    port: '6603',
+    database: "wabot-data",
+});
 //START MAIN [usage:start(filename, N° strings, success callback)
 start(setArr[0] + "\\languages\\" + setArr[1]+".lan", function(){
     //code only runs if language file OK
@@ -190,24 +190,25 @@ function sendErr(client, chatId) {//Inizializzare funzione invio errore
 }
 
 function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (da usare se l'entrata chatID non è presente nella tabella)
-    /*
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
-    //con.query("UPDATE utenti SET chatCode = '" + tempCode + "', active = '0' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
-    con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-	if(result[0] == undefined){
-	     con.query("INSERT INTO utenti (chatId, chatCode, count) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
-             	if (err) console.log(err);
-	        callback(tempCode);
-	     });
-	}
-	else{
-	    setCode(chatId,(code)=>{callback(code)});
-	}
-    });*/
+    con.query("UPDATE utenti SET chatCode = '" + tempCode + "', active = '0' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+        con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
+            if (result[0] == undefined) {
+                con.query("INSERT INTO utenti (chatId, chatCode, count) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
+                    if (err) console.log(err);
+                    callback(tempCode);
+                });
+            }
+            else {
+                setCode(chatId, (code) => { callback(code) });
+            }
+        });
+   });
 }
+    
 function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (aggiorna un'entrata gia presente)
     
- /*   var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
+    var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
 	if(result[0] == undefined){
              con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
@@ -218,7 +219,7 @@ function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi l
 	else{
 	    setCode(chatId,(code)=>{callback(code)});
 	}
-    });*/
+    });
 }
 //BOT----------------------------------------
 async function tts(client, text, chatId, title) { //funzione per generare audio (TTS) e inviare
