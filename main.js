@@ -193,12 +193,39 @@ function sendErr(client, chatId) {//Inizializzare funzione invio errore
     analytics(chatId,"Error")
 
 }
+function validate(client, chatId, callback) { //funzione per validazione chat
+    //callback(true)
+    con.execute("SELECT uses FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+        if (err) console.log(err);
+        if (result.length == 0) {//check if the entry exists
+            if(DEBUG_LVL > 1) console.log(white, "Recived message from new group, verifying");
+            setCode(chatId, function (code) {
+                sendCode(client, code, chatId);
+                callback(false);
+            });
+        }
+        else {
+            if (result[0].uses < MaxMessageVer) { //chatId registrato e valido
+                callback(true);
+                con.execute("UPDATE utenti SET uses=uses+1  WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+                    if (err) console.log(err);
+                });
+            }
+            else { //se il chatId è registrato, ma non è attivo allora aggiorna il codice
+                upCode(chatId, function (code) {
+                    sendCode(client, code, chatId);
+                    callback(false);
+                });
+            }
+        }
 
+    });
+}
 function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (da usare se l'entrata chatID non è presente nella tabella)
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
-    con.query("UPDATE utenti SET chatCode = '" + tempCode + "', active = '0' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
+    con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-            if (result == undefined) {
+            if (result.length == 0) {
                 con.query("INSERT INTO utenti (chatId, chatCode, uses) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
                     if (err) console.log(err);
                     callback(tempCode);
@@ -210,12 +237,12 @@ function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi 
         });
    });
 }
-    
+
 function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi lo restituisce come int (aggiorna un'entrata gia presente)
     
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("SELECT uses FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-	if(result == undefined){
+	if(result.length == 0){
              con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
              	if (err) console.log(err);
 	        callback(tempCode);
@@ -384,38 +411,10 @@ async function help(client, chatId) { //funzione per messaggio aiuto
         await client.sendText(chatId,text);
     analytics(chatId, "Comandi");
 }
-function validate(client, chatId, callback) { //funzione per validazione chat
-    //callback(true)
-    con.query("SELECT uses FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
-        if (err) console.log(err);
-        if (result == undefined ) {//check if the entry exists
-            console.log("recived message from new group, verifying");
-            setCode(chatId, function (code){
-		sendCode(client, code, chatId);
-                callback(false);
-            });
-        }
-        else {
-            if (result[0].uses < MaxMessageVer) { //chatId registrato e valido
-                callback(true);
-                con.query("UPDATE utenti SET uses=uses+1  WHERE chatId = '" + chatId + "';", function (err, result, fields) {
-                    if (err) console.log(err);
-                });
-            }
-            else { //se il chatId è registrato, ma non è attivo allora aggiorna il codice
-                upCode(chatId,  function (code){
-		    sendCode(client, code, chatId);
-                    callback(false);
-                });
-            }
-        }
-
-    });
-}
 async function sendCode(client, codice, chatId){
-	await client.sendText(chatId,	"*Questa chat ha terminato le interazioni*\nPer riabilitare il bot, visita:\n http://robertobot.duckdns.org \nVerrai spostato su una pagina dove verrà richiesto di inserire il seguente codice:");
+	//await client.sendText(chatId,	"*Questa chat ha terminato le interazioni*\nPer riabilitare il bot, visita:\n http://robertobot.duckdns.org \nVerrai spostato su una pagina dove verrà richiesto di inserire il seguente codice:");
 	await client.sendText(chatId,codice.toString());
-	axios.post("https://www.google-analytics.com/collect","v=1&t=pageview&tid=UA-196829682-1&cid="+chatId+"&t=event&ec=verifica&ea=limite_messaggi").catch(error => {console.error("error sending post request")});
+    analytics(chatId, "Verifica");
 }
 function leaveOld(client){
     con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
@@ -429,6 +428,7 @@ function leaveOld(client){
 	    console.log("No old groups to leave");
     });
 }
+
 function analytics(client_id, event_name) {
     const measurement_id = 'G-0BE6M947L6';
     const api_secret = '-4eLYTRSTyGdFAa1_kafZA';
