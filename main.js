@@ -198,7 +198,7 @@ function setCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi 
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("UPDATE utenti SET chatCode = '" + tempCode + "', active = '0' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-            if (result[0] == undefined) {
+            if (result == undefined) {
                 con.query("INSERT INTO utenti (chatId, chatCode, count) VALUES ('" + chatId + "','" + tempCode + "','" + (MaxMessageVer + 1) + "');", function (err, result, fields) {
                     if (err) console.log(err);
                     callback(tempCode);
