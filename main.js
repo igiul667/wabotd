@@ -64,10 +64,10 @@ if (DEBUG_LVL > 1) console.log("%sLoading language file: %s/languages/%s.lan",wh
 //START MySQL Client
 
 var con = mysql.createConnection({
-    host: "mysql",
+    host: "192.168.0.235",
     user: "nodejs",
     password: "a5C569sfa@W*hT",
-    port: '3306',
+    port: '6603',
     database: "wabot-data",
 });
 //START MAIN [usage:start(filename, N° strings, success callback)
