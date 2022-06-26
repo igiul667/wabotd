@@ -215,7 +215,7 @@ function upCode(chatId, callback) { //ottiene chatCode casuale e verifica, poi l
     
     var tempCode = Math.floor(100000 + Math.random() * 900000);//genera codice a 6 cifre
     con.query("SELECT count FROM utenti WHERE chatCode = '" + tempCode + "';", function (err, result, fields) {
-	if(result[0] == undefined){
+	if(result == undefined){
              con.query("UPDATE utenti SET chatCode = '" + tempCode + "' WHERE chatId = '" + chatId + "';", function (err, result, fields) {
              	if (err) console.log(err);
 	        callback(tempCode);
@@ -388,7 +388,7 @@ function validate(client, chatId, callback) { //funzione per validazione chat
     //callback(true)
     con.query("SELECT count FROM utenti WHERE chatId = '" + chatId + "';", function (err, result, fields) {
         if (err) console.log(err);
-        if (result[0] == undefined ) {//check if the entry exists
+        if (result == undefined ) {//check if the entry exists
             console.log("recived message from new group, verifying");
             setCode(chatId, function (code){
 		sendCode(client, code, chatId);
@@ -419,7 +419,7 @@ async function sendCode(client, codice, chatId){
 }
 function leaveOld(client){
     con.query("select chatId from utenti where last_use < NOW() - INTERVAL 2 WEEK;", function (err, result, fields) {
-	if(result[0]!=undefined){
+	if(result!=undefined){
 	   result.forEach(groupId => {
 		console.log("leaving group:",groupId.chatId);
 //		client.leaveGroup(groupId.chatId).then(()=>{ await client.leaveGroup(groupId.chatId); });
