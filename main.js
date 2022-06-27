@@ -10,7 +10,8 @@
 const MaxMessageVer = 50;
 const SETTINGS_LINES = 3;
 const STRING_LINES = 9;
-const DEBUG_LVL = 3;
+
+const DEBUG_LVL = 0;
 
 //START LOGGING & LIBS-----------------------
 const red = "\x1b[31m";
@@ -44,7 +45,7 @@ try {
         const data = fs.readFileSync("./setting.set", 'UTF-8');
         const lines = data.split(/\r?\n/);
     lines.forEach((line) => {
-            setArr.push(line);
+	    if(line!='') setArr.push(line);
         });
 }
 catch (err) {
@@ -72,7 +73,7 @@ var con = mysql.createConnection({
     database: "wabot-data",
 });
 //START MAIN [usage:start(filename, N° strings, success callback)
-start(setArr[0] + "\\languages\\" + setArr[1]+".lan", function(){
+start(setArr[0] + "/languages/" + setArr[1]+".lan", function(){
     //code only runs if language file OK
     //start the venom library
     venom
@@ -90,7 +91,7 @@ function start(filename, callback) {
         const data = fs.readFileSync(filename, 'UTF-8');
         const lines = data.split(/\r?\n/);
         lines.forEach((line) => {
-            strArr.push(line);
+            if(line!='') strArr.push(line);
         });
     } catch (err) {
         console.error(err);
@@ -464,4 +465,3 @@ function welcomeMessage(client, chatId) {
             console.error(error);
         });
 }
-
