@@ -307,7 +307,7 @@ async function pensiero(client, text, chatId, title) { //funzione per generare a
     await client
         .sendVoice(chatId, setArr[0] + title + ".mp3", text, "")
         .then(() => {
-            client.sendText(chatId, emoji.get('arrow_up') + strArr[5] + '\nID:'+ Date.now);
+            client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text);
             fs.unlink(setArr[0] + title + ".mp3", (er) => { }); //delete non necessary media
         })
         .catch((erro) => {
