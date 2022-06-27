@@ -1,7 +1,7 @@
 FROM debian
 RUN apt update
 RUN apt install -y nano ffmpeg python3-pip python3 nodejs npm chromium
-RUN pip3 install pytube pydub Google-Images-Search gtts
+RUN pip3 install pytube pydub Google-Images-Search gtts wikipedia
 RUN git clone https://igiul667@github.com/igiul667/wabotd
 
 WORKDIR /wabotd
