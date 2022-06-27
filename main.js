@@ -65,7 +65,7 @@ if (DEBUG_LVL > 1) console.log("%sLoading language file: %s/languages/%s.lan",wh
 //START MySQL Client
 
 var con = mysql.createConnection({
-    host: "192.168.0.235",
+    host: "192.168.0.234",
     user: "nodejs",
     password: "a5C569sfa@W*hT",
     port: '6603',
@@ -76,7 +76,7 @@ start(setArr[0] + "\\languages\\" + setArr[1]+".lan", function(){
     //code only runs if language file OK
     //start the venom library
     venom
-        .create({disableWelcome: true, headless: true})
+        .create({session:"wabot-2.0.x", disableWelcome: true, headless: true})
         .then(tmp => main(tmp))
         .catch((erro) => {
             console.error(erro);
@@ -100,8 +100,8 @@ function start(filename, callback) {
         exit(100);
     }
     else {
-        //console.log(green, "Loaded language data:", white);
-        //console.table(strArr);
+        if (DEBUG_LVL > 1) console.log(green, "Loaded language data:", white);
+        if (DEBUG_LVL > 3) console.table(strArr);
         callback();
     }
     console.log(green, "Cleaning old files");
@@ -112,7 +112,7 @@ function start(filename, callback) {
 }
 function main(client) { //check for new messages (runs in loop forever)
     //console.log("Check if this runs");
-    leaveOld(client);
+    //leaveOld(client);
     client.onMessage((message) => {
 //      msgFile.write(Date.now()+"#"+message.from+'\n');
 //      if(parseInt(fs.statSync(setArr[0]+"/log/tmp.txt").size)>30000){
@@ -149,6 +149,12 @@ function main(client) { //check for new messages (runs in loop forever)
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
                     if (active)  //controlla se il chatId è attivo
                         video(client, message.body.replace(".video ", ""), message.from, Date.now());
+                });
+            }
+            if (message.body.startsWith(".pensiero ")) {
+                validate(client, message.from, (active) => { //controlla se il chatId è registrato
+                    if (active)  //controlla se il chatId è attivo
+                        pensiero(client, message.body.replace(".pensiero ", ""), message.from, Date.now());
                 });
             }
 	    if (message.body.toLowerCase().startsWith(".sticker ")){
@@ -284,7 +290,7 @@ async function tts(client, text, chatId, title) { //funzione per generare audio 
     await client
         .sendVoice(chatId, setArr[0] + title + ".mp3", text, "")
         .then(() => {
-            client.sendText(chatId, emoji.get('arrow_up') + strArr[5]);
+            client.sendText(chatId, emoji.get('arrow_up') + strArr[5] + '\nID:' + Date.now);
 	    fs.unlink(setArr[0] + title + ".mp3", (er) => {} ); //delete non necessary media
         })
         .catch((erro) => {
@@ -293,6 +299,22 @@ async function tts(client, text, chatId, title) { //funzione per generare audio 
         });
 //     client.sendText(chatId, "Roberto ha superato il limite di messaggi giornalieri è bloccato");
     analytics(chatId,"TTS");
+}
+async function pensiero(client, text, chatId, title) { //funzione per generare audio (TTS) e inviare
+    if (DEBUG_LVL > 2) console.log("%sCalling external program: %s%spensiero.py -c \"%s\" -n %s -l %s", green, setArr[2], setArr[0], text, title, setArr[1]);
+    await exec.execSync(setArr[2] + setArr[0] + 'pensiero.py -c "' + text + '" -n ' + title + ' -l ' + setArr[1]);
+    await client
+        .sendVoice(chatId, setArr[0] + title + ".mp3", text, "")
+        .then(() => {
+            client.sendText(chatId, emoji.get('arrow_up') + strArr[5] + '\nID:'+ Date.now);
+            fs.unlink(setArr[0] + title + ".mp3", (er) => { }); //delete non necessary media
+        })
+        .catch((erro) => {
+            if (DEBUG_LVL > 1) console.error("%sError sending tts audio! ", red);
+            sendErr(client, chatId);
+        });
+    //     client.sendText(chatId, "Roberto ha superato il limite di messaggi giornalieri è bloccato");
+    analytics(chatId, "TTS");
 }
 async function audio(client, text, chatId, title) { //funzione per generare audio e inviare
     if (DEBUG_LVL > 2) console.log("%sCalling external program: %s%sytd.py -t \"%s\" -n %s -m audio", green, setArr[2], setArr[0], text, title);
