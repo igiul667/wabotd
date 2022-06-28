@@ -5,6 +5,11 @@ Per una lista completa visita il sito nella descrizione del bot
 ".roberto ciao"
 --> Legge "ciao" in un vocale
 
+*PENSIERO :*
+
+".pensiero elicottero"
+--> Legge qualcosa riguardo "elicottero", per ottenere output testuale usa ".wiki elicottero" 
+
 *FOTO:*
 
 ".foto mucca"
