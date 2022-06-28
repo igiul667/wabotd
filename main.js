@@ -297,8 +297,8 @@ async function tts(client, text, chatId, title) { //funzione per generare audio 
     await client
         .sendVoice(chatId, setArr[0] + title + ".mp3", text, "")
         .then(() => {
-            client.sendText(chatId, emoji.get('arrow_up') + strArr[5] + '\nID:' + Date.now);
-	    fs.unlink(setArr[0] + title + ".mp3", (er) => {} ); //delete non necessary media
+            //client.sendText(chatId, emoji.get('arrow_up') + strArr[5] + '\nID:' + Date.now);
+	        fs.unlink(setArr[0] + title + ".mp3", (er) => {} ); //delete non necessary media
         })
         .catch((erro) => {
             if (DEBUG_LVL > 1) console.error("%sError sending tts audio! ", red);
@@ -325,7 +325,7 @@ async function wiki(client, text, chatId, title, mode) { //funzione per generare
     }
     else {
         let wiki_dat = fs.readFileSync(setArr[0] + title + ".txt", 'utf-8');
-        client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text + "\n" + wiki_dat)
+        client.sendText(chatId, emoji.get('arrow_down') + strArr[4] + text + "\n" + wiki_dat)
             .then(() => {
                 fs.unlink(setArr[0] + title + ".txt", (er) => { });
             });
