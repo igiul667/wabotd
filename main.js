@@ -20,7 +20,7 @@ const white = "\x1b[37m";
 
 console.log("\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\u2584\r\n\u2588\u2588\u2591\u2588\u2588\u2588\u2591\u2588\u2591\u2584\u2584\u2580\u2588\u2591\u2584\u2584\u2580\u2588\u2580\u2584\u2584\u2580\u2588\u2584\u2591\u2584\u2588\u2588\u2588\u2588\u2588\u2588\u2584\u2588\u2591\u2584\u2584\u2588\u2588\u2588\u2591\u2584\u2591\u2588\u2588\u2588\u2588\u2591\u2584\u2584\u2591\r\n\u2588\u2588\u2591\u2588\u2591\u2588\u2591\u2588\u2591\u2580\u2580\u2591\u2588\u2591\u2584\u2584\u2580\u2588\u2591\u2588\u2588\u2591\u2588\u2588\u2591\u2588\u2588\u2580\u2580\u2588\u2588\u2588\u2591\u2588\u2584\u2584\u2580\u2588\u2588\u2588\u2588\u2580\u2584\u2588\u2580\u2580\u2588\u2591\u2580\u2584\u2591\r\n\u2588\u2588\u2584\u2580\u2584\u2580\u2584\u2588\u2591\u2588\u2588\u2591\u2588\u2584\u2584\u2584\u2584\u2588\u2588\u2584\u2584\u2588\u2588\u2588\u2584\u2588\u2588\u2584\u2584\u2588\u2591\u2580\u2591\u2588\u2584\u2584\u2584\u2588\u2588\u2588\u2591\u2580\u2580\u2588\u2584\u2584\u2588\u2591\u2580\u2580\u2591\r\n\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580\u2580");
 
-if(DEBUG_LVL>1) console.log(white, "Loading venom lib");
+if (DEBUG_LVL > 1) console.log(white, "Loading venom lib");
 const venom = require('venom-bot');     //interface for whatsapp
 if (DEBUG_LVL > 1) console.log(white, "Loading mime lib");
 const mime = require('mime-types');    //mime library
@@ -120,6 +120,7 @@ function main(client) { //check for new messages (runs in loop forever)
 //              fs.unlinkSync(setArr[0]+"/log/tmp.txt");
 //      }
         analytics(message.from, "Message");
+        console.print(message)
         client.sendSeen(message.from);
         if (message.type == "chat" && message.body.length < 400) {
             if (message.body.startsWith(".roberto")) {
@@ -164,21 +165,22 @@ function main(client) { //check for new messages (runs in loop forever)
                         wiki(client, message.body.replace(".wiki ", ""), message.from, Date.now(), "text");
                 });
             }
-	    if (message.body.toLowerCase().startsWith(".sticker ")){
+            if (message.body.startsWith(".sticker")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
 	           if (active)  //controlla se il chatId è attivo
 	               tagsticker(client, message.from, message, Date.now());
 	        });
-	    }
-            if (message.body.startsWith("Comandi")) {
+            }
+            if (message.body.toLowerCase().startsWith("comandi")) {
                 help(client, message.from);
             }
         }
-        else {
+        else if (message.type == "cazz") {
+            console.log("BUG 21");
             if (message.caption.startsWith(".sticker")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
                     if (active)  //controlla se il chatId è attivo
-                        sticker(client, message.from, message, Date.now());
+                      sticker(client, message.from, message, Date.now());
                 });
             }
         }
@@ -440,34 +442,38 @@ async function sticker(client, chatId, message, title) {
 }
 async function tagall(client, chatId, message) { //funzione per generare foto e inviare
 //    console.log("%sCalling external program: %s%sfoto.py -t \"%s\" -n %s -m %s", green, setArr[2], setArr[0], text, title, mode);
-        var repl = await client.returnReply(message); // replicated message
-        var part = await client.getGroupMembers(chatId);
-        var arr = [];
-        var msg="";
-//      console.log(repl);
-        for (let i=0;i<part.length;i++){
-//              console.log(part[i].id.user);
-                arr.push(part[i].id.user);
-                msg += (' @'+part[i].id.user);
-        }
-        await client.sendMentioned(
-          chatId,
-          msg,
-          arr,
-        );
+    var repl = await client.returnReply(message); // replicated message
+    var part = await client.getGroupMembers(chatId);
+    var arr = [];
+    var msg="";
+    console.log("SESSO)");
+    console.log(repl);
+    console.log("CACCA");
+    console.log(repl.id);
+    for (let i=0;i<part.length;i++){
+//      console.log(part[i].id.user);
+        arr.push(part[i].id.user);
+        msg += (' @'+part[i].id.user);
+    }
+    await client.sendMentioned(
+      chatId,
+      msg,
+      arr,
+    );
 	client.reply(
-         chatId,
-         emoji.get('arrow_up')+strArr[8],
-         repl.id,
-        ).catch((erro) => {
-            if (DEBUG_LVL > 1) console.error('Error when replying: ', erro); //return object error
-        });;
+      chatId,
+      emoji.get('arrow_up')+strArr[8],
+      repl.id,
+    ).catch((erro) => {
+      if (DEBUG_LVL > 1) console.error('Error when replying: ', erro); //return object error
+    });;
     analytics(chatId, "Tagall");
 
 }
 async function tagsticker(client, chatId, message, title){
     var repl = await client.returnReply(message); // replicated message
-    if(repl != undefined){
+    console.log(repl);
+    if(repl != undefined && repl.type != "chat"){
         sticker(client, chatId, repl, title);
     }
 }
