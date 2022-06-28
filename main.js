@@ -120,8 +120,7 @@ function main(client) { //check for new messages (runs in loop forever)
 //              fs.unlinkSync(setArr[0]+"/log/tmp.txt");
 //      }
         analytics(message.from, "Message");
-        console.print(message)
-        client.sendSeen(message.from);
+
         if (message.type == "chat" && message.body.length < 400) {
             if (message.body.startsWith(".roberto")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
@@ -175,8 +174,7 @@ function main(client) { //check for new messages (runs in loop forever)
                 help(client, message.from);
             }
         }
-        else if (message.type == "cazz") {
-            console.log("BUG 21");
+        else {
             if (message.caption.startsWith(".sticker")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
                     if (active)  //controlla se il chatId è attivo
@@ -441,32 +439,37 @@ async function sticker(client, chatId, message, title) {
 
 }
 async function tagall(client, chatId, message) { //funzione per generare foto e inviare
-//    console.log("%sCalling external program: %s%sfoto.py -t \"%s\" -n %s -m %s", green, setArr[2], setArr[0], text, title, mode);
-    var repl = await client.returnReply(message); // replicated message
+    
+    var repl = 'false_' + chatId + '_' + message.quotedStanzaID + '_' + message.quotedParticipant;
     var part = await client.getGroupMembers(chatId);
     var arr = [];
-    var msg="";
-    console.log("SESSO)");
-    console.log(repl);
-    console.log("CACCA");
-    console.log(repl.id);
-    for (let i=0;i<part.length;i++){
+    var msg = "";
+
+    for (let i=0;i<(part.length-1);i++){
 //      console.log(part[i].id.user);
-        arr.push(part[i].id.user);
+        arr.push(part[i].id.user.toString());
         msg += (' @'+part[i].id.user);
     }
-    await client.sendMentioned(
+    client.sendMentioned(
       chatId,
       msg,
       arr,
     );
+    /*client.sendMessageOptions(
+        chatId,
+        emoji.get('arrow_up') + strArr[8] + '\n' + msg,
+        {
+            mentionedJidList: arr,
+            quotedMessageId: repl
+        }
+    );*/
 	client.reply(
       chatId,
       emoji.get('arrow_up')+strArr[8],
-      repl.id,
+      repl
     ).catch((erro) => {
       if (DEBUG_LVL > 1) console.error('Error when replying: ', erro); //return object error
-    });;
+    });
     analytics(chatId, "Tagall");
 
 }
