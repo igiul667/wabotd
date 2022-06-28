@@ -324,7 +324,7 @@ async function wiki(client, text, chatId, title, mode) { //funzione per generare
         analytics(chatId, "WIKI_Speak");
     }
     else {
-        wiki_dat = fs.readFileSync(setArr[0] + title + ".txt");
+        let wiki_dat = fs.readFileSync(setArr[0] + title + ".txt", 'utf-8');
         client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text + "\n" + wiki_dat)
             .then(() => {
                 fs.unlink(setArr[0] + title + ".txt", (er) => { });
