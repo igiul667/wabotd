@@ -11,7 +11,7 @@ const MaxMessageVer = 50;
 const SETTINGS_LINES = 3;
 const STRING_LINES = 9;
 
-const DEBUG_LVL = 0;
+const DEBUG_LVL = 5;
 
 //START LOGGING & LIBS-----------------------
 const red = "\x1b[31m";
@@ -155,7 +155,13 @@ function main(client) { //check for new messages (runs in loop forever)
             if (message.body.startsWith(".pensiero ")) {
                 validate(client, message.from, (active) => { //controlla se il chatId è registrato
                     if (active)  //controlla se il chatId è attivo
-                        pensiero(client, message.body.replace(".pensiero ", ""), message.from, Date.now());
+                        wiki(client, message.body.replace(".pensiero ", ""), message.from, Date.now(),"voice");
+                });
+            }
+            if (message.body.startsWith(".wiki ")) {
+                validate(client, message.from, (active) => { //controlla se il chatId è registrato
+                    if (active)  //controlla se il chatId è attivo
+                        wiki(client, message.body.replace(".wiki ", ""), message.from, Date.now(), "text");
                 });
             }
 	    if (message.body.toLowerCase().startsWith(".sticker ")){
@@ -301,21 +307,33 @@ async function tts(client, text, chatId, title) { //funzione per generare audio 
 //     client.sendText(chatId, "Roberto ha superato il limite di messaggi giornalieri è bloccato");
     analytics(chatId,"TTS");
 }
-async function pensiero(client, text, chatId, title) { //funzione per generare audio (TTS) e inviare
-    if (DEBUG_LVL > 2) console.log("%sCalling external program: %s%spensiero.py -c \"%s\" -n %s -l %s", green, setArr[2], setArr[0], text, title, setArr[1]);
-    await exec.execSync(setArr[2] + setArr[0] + 'pensiero.py -c "' + text + '" -n ' + title + ' -l ' + setArr[1]);
-    await client
-        .sendVoice(chatId, setArr[0] + title + ".mp3", text, "")
-        .then(() => {
-            client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text);
-            fs.unlink(setArr[0] + title + ".mp3", (er) => { }); //delete non necessary media
-        })
-        .catch((erro) => {
-            if (DEBUG_LVL > 1) console.error("%sError sending tts audio! ", red);
-            sendErr(client, chatId);
-        });
+async function wiki(client, text, chatId, title, mode) { //funzione per generare audio (TTS) e inviare
+    if (DEBUG_LVL > 2) console.log("%sCalling external program: %s%spensiero.py -c \"%s\" -n %s -l %s -m %s", green, setArr[2], setArr[0], text, title, setArr[1], mode);
+    await exec.execSync(setArr[2] + setArr[0] + 'wiki.py -c "' + text + '" -n ' + title + ' -l ' + setArr[1] + ' -m ' + mode);
+    if (mode == "voice") {
+        await client
+            .sendVoice(chatId, setArr[0] + title + ".mp3")
+            .then(() => {
+                client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text);
+                fs.unlink(setArr[0] + title + ".mp3", (er) => { }); //delete non necessary media
+            })
+            .catch((erro) => {
+                if (DEBUG_LVL > 1) console.error("%sError sending wiki audio! ", red);
+                sendErr(client, chatId);
+            });
+        analytics(chatId, "WIKI_Speak");
+    }
+    else {
+        wiki_dat = fs.readFileSync(setArr[0] + title + ".txt");
+        client.sendText(chatId, emoji.get('arrow_up') + strArr[4] + text + "\n" + wiki_dat)
+            .then(() => {
+                fs.unlink(setArr[0] + title + ".txt", (er) => { });
+            });
+        analytics(chatId, "WIKI_Text");
+    }
+
     //     client.sendText(chatId, "Roberto ha superato il limite di messaggi giornalieri è bloccato");
-    analytics(chatId, "TTS");
+    
 }
 async function audio(client, text, chatId, title) { //funzione per generare audio e inviare
     if (DEBUG_LVL > 2) console.log("%sCalling external program: %s%sytd.py -t \"%s\" -n %s -m audio", green, setArr[2], setArr[0], text, title);
